@@ -206,10 +206,7 @@ async def process_vacancy_link(message: Message):
     # Генерируем пост через AI
     try:
         post = await generate_telegram_post(formatted_data)
-        await message.answer(
-            f"✅ Готовый пост:\n\n{post}",
-            parse_mode=ParseMode.HTML
-        )
+        await message.answer(post, parse_mode=ParseMode.HTML)
     except Exception as e:
         await message.answer(f"❌ Ошибка при генерации поста: {str(e)}")
 
