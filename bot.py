@@ -3,10 +3,12 @@ from aiogram.filters import Command
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
+from aiogram.enums import ParseMode
 from config import TELEGRAM_BOT_TOKEN, ADMIN_IDS
 from hh_api import extract_vacancy_id, get_vacancy_info, format_vacancy_data
 from ai_generator import generate_telegram_post
 from prompts import get_prompt, set_prompt, reset_prompt
+
 
 
 dp = Dispatcher()
@@ -204,7 +206,10 @@ async def process_vacancy_link(message: Message):
     # Генерируем пост через AI
     try:
         post = await generate_telegram_post(formatted_data)
-        await message.answer(f"✅ Готовый пост:\n\n{post}")
+        await message.answer(
+            f"✅ Готовый пост:\n\n{post}",
+            parse_mode=ParseMode.HTML
+        )
     except Exception as e:
         await message.answer(f"❌ Ошибка при генерации поста: {str(e)}")
 
