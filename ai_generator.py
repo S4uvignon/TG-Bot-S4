@@ -1,13 +1,13 @@
 from openai import OpenAI
-from config import DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL
+from config import GROQ_API_KEY, GROQ_BASE_URL
 
 
 async def generate_telegram_post(vacancy_info: str) -> str:
     """Генерирует пост для Telegram на основе информации о вакансии"""
     
     client = OpenAI(
-        api_key=DEEPSEEK_API_KEY,
-        base_url=DEEPSEEK_BASE_URL
+        api_key=GROQ_API_KEY,
+        base_url=GROQ_BASE_URL
     )
     
     prompt = f"""
@@ -28,7 +28,7 @@ async def generate_telegram_post(vacancy_info: str) -> str:
 """
     
     response = client.chat.completions.create(
-        model="deepseek-chat",  # или "deepseek-reasoner" для более сложных задач
+        model="llama-3.3-70b-versatile",  # Быстрая и качественная модель
         messages=[
             {
                 "role": "system", 
