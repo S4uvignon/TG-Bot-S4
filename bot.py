@@ -217,7 +217,7 @@ async def process_vacancy_link(message: Message):
         footer = f"\n\n🔗 Исходная вакансия: {original_url}"
 
         # Вариант 2 — красивая кликабельная ссылка в MarkdownV2
-        # footer = f"\n\n🔗 [Смотреть вакансию на hh.ru]({escape_md_v2(original_url)})"
+        # footer = f"\n\n🔗 [Смотреть вакансию на hh.ru]{original_url})"
 
         full_text = post + footer
 
