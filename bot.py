@@ -8,6 +8,7 @@ from config import TELEGRAM_BOT_TOKEN, ADMIN_IDS
 from hh_api import extract_vacancy_id, get_vacancy_info, format_vacancy_data
 from ai_generator import generate_telegram_post
 from prompts import get_prompt, set_prompt, reset_prompt
+from hh_api import extract_vacancy_id, extract_vacancy_url, get_vacancy_info, format_vacancy_data
 
 
 
@@ -190,6 +191,9 @@ async def process_vacancy_link(message: Message):
     if not vacancy_id:
         await message.answer("❌ Не удалось извлечь ID вакансии из ссылки. Проверьте формат.")
         return
+
+    # Извлекаем полную ссылку на вакансию
+    vacancy_url = extract_vacancy_url(message.text)
     
     await message.answer("⏳ Обрабатываю вакансию...")
     
@@ -201,11 +205,11 @@ async def process_vacancy_link(message: Message):
         return
     
     # Форматируем данные
-    formatted_data = format_vacancy_data(vacancy_data)
+    formatted_data = format_vacancy_data(vacancy_data, vacancy_url)
     
     # Генерируем пост через AI
     try:
-        post = await generate_telegram_post(formatted_data)
+        post = await generate_telegram_post(formatted_data, vacancy_url)
         await message.answer(post, parse_mode=ParseMode.HTML)
     except Exception as e:
         await message.answer(f"❌ Ошибка при генерации поста: {str(e)}")
