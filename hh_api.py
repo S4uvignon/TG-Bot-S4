@@ -9,12 +9,14 @@ def extract_vacancy_id(url: str) -> Optional[str]:
         r'vacancy/(\d+)',
         r'vacancies/(\d+)',
     ]
+
+    original_url = url  # Сохраняем исходную ссылку
     
     for pattern in patterns:
         match = re.search(pattern, url)
         if match:
             return match.group(1)
-    return None
+    return None, original_url
 
 
 async def get_vacancy_info(vacancy_id: str) -> Optional[Dict]:
@@ -31,7 +33,7 @@ async def get_vacancy_info(vacancy_id: str) -> Optional[Dict]:
             return None
 
 
-def format_vacancy_data(vacancy: Dict) -> str:
+def format_vacancy_data(vacancy: Dict, original_url: str) -> str:
     """Форматирует данные вакансии для передачи в AI"""
     
     # Зарплата
@@ -57,6 +59,7 @@ def format_vacancy_data(vacancy: Dict) -> str:
     skills_str = ', '.join(skills) if skills else 'Не указаны'
     
     formatted = f"""
+Ссылка на вакансию: {original_url}
 Название: {vacancy['name']}
 Компания: {vacancy['employer']['name']}
 Город: {vacancy['area']['name']}
