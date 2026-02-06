@@ -9,14 +9,30 @@ def extract_vacancy_id(url: str) -> Optional[str]:
         r'vacancy/(\d+)',
         r'vacancies/(\d+)',
     ]
-
-    original_url = url  # Сохраняем исходную ссылку
     
     for pattern in patterns:
         match = re.search(pattern, url)
         if match:
             return match.group(1)
     return None, original_url
+
+def extract_vacancy_url(text: str) -> Optional[str]:
+    """Извлекает полную ссылку на вакансию из текста"""
+    # Ищем ссылку на hh.ru
+    patterns = [
+        r'https?://[^\s]*hh\.ru/vacancy/\d+[^\s]*',
+        r'https?://[^\s]*hh\.ru/vacancies/\d+[^\s]*',
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, text)
+        if match:
+            # Убираем лишние параметры и якоря
+            url = match.group(0)
+            # Очищаем от возможных символов в конце
+            url = re.sub(r'[.,;!?)\]]+$', '', url)
+            return url
+    return None
 
 
 async def get_vacancy_info(vacancy_id: str) -> Optional[Dict]:
@@ -33,7 +49,7 @@ async def get_vacancy_info(vacancy_id: str) -> Optional[Dict]:
             return None
 
 
-def format_vacancy_data(vacancy: Dict, original_url: str) -> str:
+def format_vacancy_data(vacancy: Dict, vacancy_url: Optional[str] = None) -> str:
     """Форматирует данные вакансии для передачи в AI"""
     
     # Зарплата
@@ -57,9 +73,11 @@ def format_vacancy_data(vacancy: Dict, original_url: str) -> str:
     # Навыки
     skills = [skill['name'] for skill in vacancy.get('key_skills', [])]
     skills_str = ', '.join(skills) if skills else 'Не указаны'
+
+    # Формируем ссылку
+    link = vacancy_url or vacancy.get('alternate_url', 'Ссылка не доступна')
     
     formatted = f"""
-Ссылка на вакансию: {original_url}
 Название: {vacancy['name']}
 Компания: {vacancy['employer']['name']}
 Город: {vacancy['area']['name']}
@@ -68,6 +86,7 @@ def format_vacancy_data(vacancy: Dict, original_url: str) -> str:
 Занятость: {employment}
 График: {schedule}
 Ключевые навыки: {skills_str}
+Ссылка на вакансию: {link}
 
 Описание вакансии:
 {vacancy.get('description', 'Описание отсутствует')}
