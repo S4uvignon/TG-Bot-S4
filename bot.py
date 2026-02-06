@@ -191,9 +191,6 @@ async def process_vacancy_link(message: Message):
     if not vacancy_id:
         await message.answer("❌ Не удалось извлечь ID вакансии из ссылки. Проверьте формат.")
         return
-
-    # Извлекаем полную ссылку на вакансию
-    vacancy_url = extract_vacancy_url(message.text)
     
     await message.answer("⏳ Обрабатываю вакансию...")
     
@@ -205,12 +202,12 @@ async def process_vacancy_link(message: Message):
         return
     
     # Форматируем данные
-    formatted_data = format_vacancy_data(vacancy_data, vacancy_url)
+    formatted_data = format_vacancy_data(vacancy_data)
     
     # Генерируем пост через AI
     try:
-        post = await generate_telegram_post(formatted_data, vacancy_url)
-        await message.answer(post, parse_mode=ParseMode.HTML)
+        post = await generate_telegram_post(formatted_data)
+        await message.answer(post)
     except Exception as e:
         await message.answer(f"❌ Ошибка при генерации поста: {str(e)}")
 
