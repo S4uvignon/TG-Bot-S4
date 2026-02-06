@@ -8,7 +8,7 @@ from config import TELEGRAM_BOT_TOKEN, ADMIN_IDS
 from hh_api import extract_vacancy_id, get_vacancy_info, format_vacancy_data
 from ai_generator import generate_telegram_post
 from prompts import get_prompt, set_prompt, reset_prompt
-from hh_api import extract_vacancy_id, extract_vacancy_url, get_vacancy_info, format_vacancy_data
+from hh_api import extract_vacancy_id, get_vacancy_info, format_vacancy_data
 
 
 
