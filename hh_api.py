@@ -14,7 +14,8 @@ def extract_vacancy_id(url: str) -> Optional[str]:
         match = re.search(pattern, url)
         if match:
             return match.group(1)
-    return None, original_url
+    return None
+
 
 def extract_vacancy_url(text: str) -> Optional[str]:
     """Извлекает полную ссылку на вакансию из текста"""
@@ -39,9 +40,9 @@ async def get_vacancy_info(vacancy_id: str) -> Optional[Dict]:
     """Получает информацию о вакансии через API HH"""
     url = f'https://api.hh.ru/vacancies/{vacancy_id}'
     
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(verify=False) as client:
         try:
-            response = await client.get(url)
+            response = await client.get(url, timeout=30.0)
             response.raise_for_status()
             return response.json()
         except httpx.HTTPError as e:
@@ -56,11 +57,11 @@ def format_vacancy_data(vacancy: Dict, vacancy_url: Optional[str] = None) -> str
     salary = "Не указана"
     if vacancy.get('salary'):
         sal = vacancy['salary']
-        if sal['from'] and sal['to']:
+        if sal.get('from') and sal.get('to'):
             salary = f"{sal['from']:,} - {sal['to']:,} {sal['currency']}"
-        elif sal['from']:
+        elif sal.get('from'):
             salary = f"от {sal['from']:,} {sal['currency']}"
-        elif sal['to']:
+        elif sal.get('to'):
             salary = f"до {sal['to']:,} {sal['currency']}"
     
     # Опыт
@@ -73,9 +74,16 @@ def format_vacancy_data(vacancy: Dict, vacancy_url: Optional[str] = None) -> str
     # Навыки
     skills = [skill['name'] for skill in vacancy.get('key_skills', [])]
     skills_str = ', '.join(skills) if skills else 'Не указаны'
-
+    
     # Формируем ссылку
-    link = vacancy_url or vacancy.get('alternate_url', 'Ссылка не доступна')
+    # Сначала пробуем использовать переданную ссылку, потом alternate_url из API
+    if vacancy_url:
+        link = vacancy_url
+    elif vacancy.get('alternate_url'):
+        link = vacancy['alternate_url']
+    else:
+        # Формируем ссылку из ID вакансии
+        link = f"https://hh.ru/vacancy/{vacancy.get('id', '')}"
     
     formatted = f"""
 Название: {vacancy['name']}
