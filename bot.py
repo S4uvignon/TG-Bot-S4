@@ -212,18 +212,16 @@ async def process_vacancy_link(message: Message):
     try:
         post = await generate_telegram_post(formatted_data)
 
-        # ─── Добавляем подпись со ссылкой ───────────────────────
-        # Вариант 1 — просто текст (самый надёжный)
-       footer = f"\n\n<b><a href='{original_url}'>👉🏻 ссылка на вакансию</a></b>"
+        footer = f"\n\n<b><a href=\"{original_url}\">👉🏻 ссылка на вакансию</a></b>"
 
-        full_text = post + footer
+        full_post = post + footer
 
         await message.answer(
-            full_text,
+            full_post,
             parse_mode="HTML",
-            disable_web_page_preview=False   # если хочешь, чтобы превью вакансии показывалось
+            disable_web_page_preview=False
         )
-    
+
     except Exception as e:
         await message.answer(f"❌ Ошибка при генерации поста: {str(e)}")
 
