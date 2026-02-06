@@ -191,6 +191,9 @@ async def process_vacancy_link(message: Message):
     if not vacancy_id:
         await message.answer("❌ Не удалось извлечь ID вакансии из ссылки. Проверьте формат.")
         return
+
+    # Сохраняем оригинальную ссылку сразу
+    original_url = message.text.strip()   # или более надёжно — берём первую подходящую ссылку
     
     await message.answer("⏳ Обрабатываю вакансию...")
     
@@ -205,9 +208,25 @@ async def process_vacancy_link(message: Message):
     formatted_data = format_vacancy_data(vacancy_data)
     
     # Генерируем пост через AI
+
     try:
         post = await generate_telegram_post(formatted_data)
-        await message.answer(post)
+
+        # ─── Добавляем подпись со ссылкой ───────────────────────
+        # Вариант 1 — просто текст (самый надёжный)
+        footer = f"\n\n🔗 Исходная вакансия: {escape_md_v2(original_url)}"
+
+        # Вариант 2 — красивая кликабельная ссылка в MarkdownV2
+        # footer = f"\n\n🔗 [Смотреть вакансию на hh.ru]({escape_md_v2(original_url)})"
+
+        full_text = post + footer
+
+        await message.answer(
+            full_text,
+            parse_mode="MarkdownV2",
+            disable_web_page_preview=False   # если хочешь, чтобы превью вакансии показывалось
+        )
+    
     except Exception as e:
         await message.answer(f"❌ Ошибка при генерации поста: {str(e)}")
 
