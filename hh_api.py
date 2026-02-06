@@ -53,42 +53,37 @@ async def get_vacancy_info(vacancy_id: str) -> Optional[Dict]:
 def format_vacancy_data(vacancy: Dict, vacancy_url: Optional[str] = None) -> str:
     """Форматирует данные вакансии для передачи в AI"""
     
-    # Зарплата
-    salary = "Не указана"
-    if vacancy.get('salary'):
-        sal = vacancy['salary']
-        if sal.get('from') and sal.get('to'):
-            salary = f"{sal['from']:,} - {sal['to']:,} {sal['currency']}"
-        elif sal.get('from'):
-            salary = f"от {sal['from']:,} {sal['currency']}"
-        elif sal.get('to'):
-            salary = f"до {sal['to']:,} {sal['currency']}"
-    
-    # Опыт
-    experience = vacancy.get('experience', {}).get('name', 'Не указан')
-    
-    # Занятость и график
-    employment = vacancy.get('employment', {}).get('name', 'Не указана')
-    schedule = vacancy.get('schedule', {}).get('name', 'Не указан')
-    
-    # Навыки
-    skills = [skill['name'] for skill in vacancy.get('key_skills', [])]
-    skills_str = ', '.join(skills) if skills else 'Не указаны'
-    
-    # Формируем ссылку
-    # Сначала пробуем использовать переданную ссылку, потом alternate_url из API
-    if vacancy_url:
-        link = vacancy_url
-    elif vacancy.get('alternate_url'):
-        link = vacancy['alternate_url']
-    else:
-        # Формируем ссылку из ID вакансии
-        link = f"https://hh.ru/vacancy/{vacancy.get('id', '')}"
-    
-    formatted = f"""
-Название: {vacancy['name']}
-Компания: {vacancy['employer']['name']}
-Город: {vacancy['area']['name']}
+    try:
+        # Зарплата
+        salary = "Не указана"
+        if vacancy.get('salary'):
+            sal = vacancy['salary']
+            if sal.get('from') and sal.get('to'):
+                salary = f"{sal['from']:,} - {sal['to']:,} {sal['currency']}"
+            elif sal.get('from'):
+                salary = f"от {sal['from']:,} {sal['currency']}"
+            elif sal.get('to'):
+                salary = f"до {sal['to']:,} {sal['currency']}"
+        
+        # Опыт
+        experience = vacancy.get('experience', {}).get('name', 'Не указан')
+        
+        # Занятость и график
+        employment = vacancy.get('employment', {}).get('name', 'Не указана')
+        schedule = vacancy.get('schedule', {}).get('name', 'Не указан')
+        
+        # Навыки
+        skills = [skill.get('name', '') for skill in vacancy.get('key_skills', [])]
+        skills_str = ', '.join(skills) if skills else 'Не указаны'
+        
+        # Формируем ссылку - просто используем ID
+        vacancy_id = vacancy.get('id', '')
+        link = vacancy_url if vacancy_url else f"https://hh.ru/vacancy/{vacancy_id}"
+        
+        formatted = f"""
+Название: {vacancy.get('name', 'Не указано')}
+Компания: {vacancy.get('employer', {}).get('name', 'Не указана')}
+Город: {vacancy.get('area', {}).get('name', 'Не указан')}
 Зарплата: {salary}
 Опыт: {experience}
 Занятость: {employment}
@@ -99,5 +94,11 @@ def format_vacancy_data(vacancy: Dict, vacancy_url: Optional[str] = None) -> str
 Описание вакансии:
 {vacancy.get('description', 'Описание отсутствует')}
 """
-    
-    return formatted.strip()
+        
+        return formatted.strip()
+        
+    except Exception as e:
+        print(f"ERROR в format_vacancy_data: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
