@@ -223,7 +223,7 @@ async def process_vacancy_link(message: Message):
 
         await message.answer(
             full_text,
-            parse_mode="MarkdownV2",
+            parse_mode="HTML",
             disable_web_page_preview=False   # если хочешь, чтобы превью вакансии показывалось
         )
     
