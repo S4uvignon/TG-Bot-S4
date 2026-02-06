@@ -214,7 +214,7 @@ async def process_vacancy_link(message: Message):
 
         # ─── Добавляем подпись со ссылкой ───────────────────────
         # Вариант 1 — просто текст (самый надёжный)
-        footer = f"\n\n<b><a href={original_url}>👉🏻 ссылка на вакансию</a></b>"
+        footer = f"\n\n<b><a href=original_url>👉🏻 ссылка на вакансию</a></b>"
 
         # Вариант 2 — красивая кликабельная ссылка в MarkdownV2
         # footer = f"\n\n🔗 [Смотреть вакансию на hh.ru]{original_url})"
