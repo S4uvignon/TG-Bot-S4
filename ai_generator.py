@@ -1,10 +1,9 @@
 from openai import OpenAI
-from typing import Optional
 from config import GROQ_API_KEY, GROQ_BASE_URL
 from prompts import get_prompt
 
 
-async def generate_telegram_post(vacancy_info: str, vacancy_url: Optional[str] = None) -> str:
+async def generate_telegram_post(vacancy_info: str) -> str:
     """Генерирует пост для Telegram на основе информации о вакансии"""
     
     client = OpenAI(
@@ -32,10 +31,4 @@ async def generate_telegram_post(vacancy_info: str, vacancy_url: Optional[str] =
         temperature=0.7
     )
     
-    generated_post = response.choices[0].message.content
-    
-    # Добавляем ссылку в конец поста, если она не была добавлена нейросетью
-    if vacancy_url and vacancy_url not in generated_post:
-        generated_post += f"\n\n🔗 Ссылка на вакансию: {vacancy_url}"
-    
-    return generated_post
+    return response.choices[0].message.content
