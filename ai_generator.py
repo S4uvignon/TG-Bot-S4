@@ -1,10 +1,10 @@
 from openai import OpenAI
+from typing import Optional
 from config import GROQ_API_KEY, GROQ_BASE_URL
 from prompts import get_prompt
-from typing import Optional
 
 
-async def generate_telegram_post(vacancy_info: str) -> str:
+async def generate_telegram_post(vacancy_info: str, vacancy_url: Optional[str] = None) -> str:
     """Генерирует пост для Telegram на основе информации о вакансии"""
     
     client = OpenAI(
