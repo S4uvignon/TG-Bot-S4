@@ -219,7 +219,7 @@ async def process_vacancy_link(message: Message):
         await message.answer(
             full_post,
             parse_mode="HTML",
-            disable_web_page_preview=False
+            disable_web_page_preview=True
         )
 
     except Exception as e:
