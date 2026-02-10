@@ -1,28 +1,26 @@
 from openai import OpenAI
-import os
 from config import GROQ_API_KEY, GROQ_BASE_URL
 from prompts import get_prompt
 
+
 async def generate_telegram_post(vacancy_info: str) -> str:
-    """Генерирует пост для Telegram через Groq (Llama 3.3)"""
+    """Генерирует пост для Telegram на основе информации о вакансии"""
     
-    # Инициализируем клиента
     client = OpenAI(
         api_key=GROQ_API_KEY,
         base_url=GROQ_BASE_URL
     )
     
-    # Получаем промпт
+    # Получаем текущий промпт и подставляем информацию о вакансии
     prompt_template = get_prompt()
     prompt = prompt_template.format(vacancy_info=vacancy_info)
     
-    # Запрос к Groq
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
             {
                 "role": "system", 
-                "content": "Ты профессиональный HR-копирайтер. Пиши на русском языке, используя HTML-разметку."
+                "content": "Ты помощник, который создаёт привлекательные посты для Telegram-канала о работе. Пиши на русском языке."
             },
             {
                 "role": "user", 
