@@ -1,6 +1,6 @@
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, FSInputFile
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.enums import ParseMode
@@ -185,47 +185,45 @@ async def cancel_handler(message: Message, state: FSMContext):
 
 @dp.message(F.text.contains("hh.ru"))
 async def process_vacancy_link(message: Message):
+    # Извлекаем ID вакансии
     vacancy_id = extract_vacancy_id(message.text)
+    
     if not vacancy_id:
-        await message.answer("❌ Не удалось извлечь ID вакансии.")
+        await message.answer("❌ Не удалось извлечь ID вакансии из ссылки. Проверьте формат.")
         return
+
+    # Сохраняем оригинальную ссылку сразу
+    original_url = message.text.strip()   # или более надёжно — берём первую подходящую ссылку
     
-    original_url = message.text.strip()
-    status_msg = await message.answer("⏳ Генерирую пост и обложку...")
+    await message.answer("⏳ Обрабатываю вакансию...")
     
+    # Получаем данные с HH API
     vacancy_data = await get_vacancy_info(vacancy_id)
+    
     if not vacancy_data:
-        await status_msg.edit_text("❌ Ошибка получения данных с HH.")
+        await message.answer("❌ Не удалось получить данные о вакансии. Проверьте ссылку.")
         return
     
-    formatted_data = format_vacancy_data(vacancy_data, original_url)  # ← ИСПРАВЛЕНО
+    # Форматируем данные
+    formatted_data = format_vacancy_data(vacancy_data)
     
+    # Генерируем пост через AI
+
     try:
-        # Безопасная распаковка результата
-        result = await generate_telegram_post(formatted_data)
-        logger.info(f"Результат: {type(result)}")
-        
-        if isinstance(result, tuple) and len(result) == 2:
-            post_text, img_prompt = result
-        elif isinstance(result, str):
-            post_text = result
-            img_prompt = "Professional workspace"
-        else:
-            raise ValueError(f"Неожиданный результат: {result}")
-        
+        post = await generate_telegram_post(formatted_data)
+
         footer = f"\n\n<b><a href=\"{original_url}\">👉🏻 ссылка на вакансию</a></b>"
-        full_post = post_text + footer
-        
-        await message.answer_photo(
-            photo="https://placehold.co/600x400/png?text=Vacancy+Image",
-            caption=full_post,
-            parse_mode="HTML"
+
+        full_post = post + footer
+
+        await message.answer(
+            full_post,
+            parse_mode="HTML",
+            disable_web_page_preview=True
         )
-        await status_msg.delete()
-        
+
     except Exception as e:
-        logger.error(f"Ошибка: {e}", exc_info=True)
-        await status_msg.edit_text(f"❌ Ошибка: {str(e)}")
+        await message.answer(f"❌ Ошибка при генерации поста: {str(e)}")
 
 
 @dp.message()
