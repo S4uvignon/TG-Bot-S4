@@ -189,7 +189,7 @@ async def process_vacancy_link(message: Message):
     if not vacancy_id:
         await message.answer("❌ Не удалось извлечь ID вакансии.")
         return
-
+    
     original_url = message.text.strip()
     status_msg = await message.answer("⏳ Генерирую пост и обложку...")
     
@@ -198,26 +198,34 @@ async def process_vacancy_link(message: Message):
         await status_msg.edit_text("❌ Ошибка получения данных с HH.")
         return
     
-    formatted_data = format_vacancy_data(vacancy_data)
-
+    formatted_data = format_vacancy_data(vacancy_data, original_url)  # ← ИСПРАВЛЕНО
+    
     try:
-        # Получаем текст и промпт
-        post_text, img_prompt = await generate_telegram_post(formatted_data)
+        # Безопасная распаковка результата
+        result = await generate_telegram_post(formatted_data)
+        logger.info(f"Результат: {type(result)}")
+        
+        if isinstance(result, tuple) and len(result) == 2:
+            post_text, img_prompt = result
+        elif isinstance(result, str):
+            post_text = result
+            img_prompt = "Professional workspace"
+        else:
+            raise ValueError(f"Неожиданный результат: {result}")
+        
         footer = f"\n\n<b><a href=\"{original_url}\">👉🏻 ссылка на вакансию</a></b>"
         full_post = post_text + footer
-
-        # Тут должна быть логика генерации картинки
-        # Если ты еще не настроил Google Cloud проект для Nano Banana,
-        # бот просто отправит текст.
+        
         await message.answer_photo(
-            photo="https://placehold.co/600x400/png?text=Vacancy+Image", # Заглушка
+            photo="https://placehold.co/600x400/png?text=Vacancy+Image",
             caption=full_post,
             parse_mode="HTML"
         )
         await status_msg.delete()
-
+        
     except Exception as e:
-        await message.answer(f"❌ Ошибка: {str(e)}")
+        logger.error(f"Ошибка: {e}", exc_info=True)
+        await status_msg.edit_text(f"❌ Ошибка: {str(e)}")
 
 
 @dp.message()
