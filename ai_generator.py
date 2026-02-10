@@ -5,7 +5,8 @@ from prompts import get_prompt
 
 # Инициализация Gemini
 genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+# Используем gemini-1.5-flash-latest или gemini-pro
+model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 async def generate_telegram_post(vacancy_info: str):
     """Генерирует текст поста и промпт для картинки"""

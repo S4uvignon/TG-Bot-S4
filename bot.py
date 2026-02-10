@@ -198,7 +198,7 @@ async def process_vacancy_link(message: Message):
         await status_msg.edit_text("❌ Ошибка получения данных с HH.")
         return
     
-    formatted_data = format_vacancy_data(vacancy_data)
+    formatted_data = format_vacancy_data(vacancy_data, original_url)
 
     try:
         # Получаем текст и промпт
