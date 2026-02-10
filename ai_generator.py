@@ -1,39 +1,36 @@
-import google.generativeai as genai
+from openai import OpenAI
 import os
-from config import GOOGLE_API_KEY
+from config import GROQ_API_KEY, GROQ_BASE_URL
 from prompts import get_prompt
 
-# Инициализация Gemini
-genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash-latest')
-
-async def generate_telegram_post(vacancy_info: str):
-    """Генерирует текст поста и промпт для картинки"""
+async def generate_telegram_post(vacancy_info: str) -> str:
+    """Генерирует пост для Telegram через Groq (Llama 3.3)"""
+    
+    # Инициализируем клиента
+    client = OpenAI(
+        api_key=GROQ_API_KEY,
+        base_url=GROQ_BASE_URL
+    )
+    
+    # Получаем промпт
     prompt_template = get_prompt()
+    prompt = prompt_template.format(vacancy_info=vacancy_info)
     
-    # Добавляем инструкцию для генерации промпта к картинке
-    full_instruction = f"""
-    {prompt_template.format(vacancy_info=vacancy_info)}
+    # Запрос к Groq
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {
+                "role": "system", 
+                "content": "Ты профессиональный HR-копирайтер. Пиши на русском языке, используя HTML-разметку."
+            },
+            {
+                "role": "user", 
+                "content": prompt
+            }
+        ],
+        max_tokens=1000,
+        temperature=0.7
+    )
     
-    ВАЖНО: В самом конце ответа, после текста поста, добавь строку:
-    IMAGE_PROMPT: [напиши здесь короткий английский промпт для генерации обложки вакансии в стиле 3D render или flat design]
-    """
-    
-    response = model.generate_content(full_instruction)
-    full_text = response.text
-    
-    # Разделяем текст поста и промпт для картинки
-    if "IMAGE_PROMPT:" in full_text:
-        post_part, image_prompt = full_text.split("IMAGE_PROMPT:", 1)
-        return post_part.strip(), image_prompt.strip()
-    
-    return full_text.strip(), "Professional office workspace, 3D render, minimalist"
-
-async def generate_image(prompt: str) -> str:
-    """Генерирует изображение (Nano Banana / Imagen)"""
-    # Используем ту же модель Gemini для генерации (в Free Tier AI Studio)
-    # Если у тебя настроен Google Cloud Vertex AI, здесь вызывается ImageGenerationModel
-    # Для базовой версии через API AI Studio пока используем заглушку или простую логику:
-    import asyncio
-    await asyncio.sleep(1) # Имитация работы
-    return None # Вернем None, если API Nano Banana еще не подключено в GCP
+    return response.choices[0].message.content
