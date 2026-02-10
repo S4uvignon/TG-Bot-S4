@@ -1,6 +1,6 @@
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.enums import ParseMode
@@ -185,45 +185,39 @@ async def cancel_handler(message: Message, state: FSMContext):
 
 @dp.message(F.text.contains("hh.ru"))
 async def process_vacancy_link(message: Message):
-    # Извлекаем ID вакансии
     vacancy_id = extract_vacancy_id(message.text)
-    
     if not vacancy_id:
-        await message.answer("❌ Не удалось извлечь ID вакансии из ссылки. Проверьте формат.")
+        await message.answer("❌ Не удалось извлечь ID вакансии.")
         return
 
-    # Сохраняем оригинальную ссылку сразу
-    original_url = message.text.strip()   # или более надёжно — берём первую подходящую ссылку
+    original_url = message.text.strip()
+    status_msg = await message.answer("⏳ Генерирую пост и обложку...")
     
-    await message.answer("⏳ Обрабатываю вакансию...")
-    
-    # Получаем данные с HH API
     vacancy_data = await get_vacancy_info(vacancy_id)
-    
     if not vacancy_data:
-        await message.answer("❌ Не удалось получить данные о вакансии. Проверьте ссылку.")
+        await status_msg.edit_text("❌ Ошибка получения данных с HH.")
         return
     
-    # Форматируем данные
     formatted_data = format_vacancy_data(vacancy_data)
-    
-    # Генерируем пост через AI
 
     try:
-        post = await generate_telegram_post(formatted_data)
-
+        # Получаем текст и промпт
+        post_text, img_prompt = await generate_telegram_post(formatted_data)
         footer = f"\n\n<b><a href=\"{original_url}\">👉🏻 ссылка на вакансию</a></b>"
+        full_post = post_text + footer
 
-        full_post = post + footer
-
-        await message.answer(
-            full_post,
-            parse_mode="HTML",
-            disable_web_page_preview=True
+        # Тут должна быть логика генерации картинки
+        # Если ты еще не настроил Google Cloud проект для Nano Banana,
+        # бот просто отправит текст.
+        await message.answer_photo(
+            photo="https://placehold.co/600x400/png?text=Vacancy+Image", # Заглушка
+            caption=full_post,
+            parse_mode="HTML"
         )
+        await status_msg.delete()
 
     except Exception as e:
-        await message.answer(f"❌ Ошибка при генерации поста: {str(e)}")
+        await message.answer(f"❌ Ошибка: {str(e)}")
 
 
 @dp.message()
