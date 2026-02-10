@@ -30,7 +30,8 @@ async def get_vacancy_info(vacancy_id: str) -> Optional[Dict]:
             print(f"Ошибка при запросе к HH API: {e}")
             return None
 
-def format_vacancy_data(vacancy: Dict, original_url: str = "") -> str:
+
+def format_vacancy_data(vacancy: Dict) -> str:
     """Форматирует данные вакансии для передачи в AI"""
     
     # Зарплата
@@ -67,8 +68,6 @@ def format_vacancy_data(vacancy: Dict, original_url: str = "") -> str:
 
 Описание вакансии:
 {vacancy.get('description', 'Описание отсутствует')}
-
-Ссылка на вакансию: {original_url}
 """
     
     return formatted.strip()
