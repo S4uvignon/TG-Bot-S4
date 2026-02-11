@@ -212,7 +212,7 @@ async def process_vacancy_link(message: Message):
     try:
         post = await generate_telegram_post(formatted_data)
 
-        footer = f"\n\n<b><a href=\"{original_url}\">👉🏻 ссылка на вакансию</a></b>"
+        footer = f"\n\n<b><a href=\"{original_url}\">👉🏻 Cсылка на вакансию</a></b>"
 
         full_post = post + footer
 
