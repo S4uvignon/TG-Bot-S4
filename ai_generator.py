@@ -1,7 +1,9 @@
 from openai import OpenAI
-from config import GROQ_API_KEY, GROQ_BASE_URL
+# from config import GROQ_API_KEY, GROQ_BASE_URL
 from prompts import get_prompt
 
+GROQ_API_KEY = "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"
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 
 async def generate_telegram_post(vacancy_info: str) -> str:
     """Генерирует пост для Telegram на основе информации о вакансии"""
