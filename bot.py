@@ -232,6 +232,25 @@ async def process_vacancy_link(message: Message):
     except Exception as e:
         await message.answer(f"❌ Ошибка при генерации поста: {str(e)}")
 
+    try:
+    job_title = vacancy_data.get("name", "job vacancy")
+    image_bytes = generate_image(job_title)
+    photo = io.BytesIO(image_bytes)
+    photo.name = "vacancy.jpg"
+    
+    await message.answer_photo(
+        photo=photo,
+        caption=full_post,
+        parse_mode="HTML"
+    )
+except Exception as e:
+    print(f"IMAGE ERROR: {e}")  # добавьте эту строку
+    await message.answer(
+        full_post,
+        parse_mode="HTML",
+        disable_web_page_preview=True
+    )
+
 
 
 @dp.message()
