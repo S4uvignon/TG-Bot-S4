@@ -1,5 +1,5 @@
 from openai import OpenAI
-# from config import GROQ_API_KEY, GROQ_BASE_URL
+from config import GROQ_API_KEY, GROQ_BASE_URL
 from prompts import get_prompt
 
 GROQ_BASE_URL = "https://api.groq.com/openai/v1"
