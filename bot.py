@@ -6,8 +6,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.enums import ParseMode
 from config import TELEGRAM_BOT_TOKEN, ADMIN_IDS
 from hh_api import extract_vacancy_id, get_vacancy_info, format_vacancy_data
-from ai_generator import generate_telegram_post, generate_image
-import io
+from ai_generator import generate_telegram_post
 from prompts import get_prompt, set_prompt, reset_prompt
 from hh_api import extract_vacancy_id, get_vacancy_info, format_vacancy_data
 
@@ -186,71 +185,45 @@ async def cancel_handler(message: Message, state: FSMContext):
 
 @dp.message(F.text.contains("hh.ru"))
 async def process_vacancy_link(message: Message):
+    # Извлекаем ID вакансии
     vacancy_id = extract_vacancy_id(message.text)
     
     if not vacancy_id:
         await message.answer("❌ Не удалось извлечь ID вакансии из ссылки. Проверьте формат.")
         return
 
-    original_url = message.text.strip()
+    # Сохраняем оригинальную ссылку сразу
+    original_url = message.text.strip()   # или более надёжно — берём первую подходящую ссылку
     
     await message.answer("⏳ Обрабатываю вакансию...")
     
+    # Получаем данные с HH API
     vacancy_data = await get_vacancy_info(vacancy_id)
     
     if not vacancy_data:
         await message.answer("❌ Не удалось получить данные о вакансии. Проверьте ссылку.")
         return
     
+    # Форматируем данные
     formatted_data = format_vacancy_data(vacancy_data)
+    
+    # Генерируем пост через AI
 
     try:
         post = await generate_telegram_post(formatted_data)
+
         footer = f"\n\n<b><a href=\"{original_url}\">👉🏻 Cсылка на вакансию</a></b>"
+
         full_post = post + footer
 
-        # Пробуем отправить с картинкой
-        try:
-            job_title = vacancy_data.get("name", "job vacancy")  # название вакансии из HH
-            image_bytes = generate_image(job_title)
-            photo = io.BytesIO(image_bytes)
-            photo.name = "vacancy.jpg"
-            
-            await message.answer_photo(
-                photo=photo,
-                caption=full_post,
-                parse_mode="HTML"
-            )
-        except Exception:
-            # Если картинка не сгенерировалась — отправляем без неё
-            await message.answer(
-                full_post,
-                parse_mode="HTML",
-                disable_web_page_preview=True
-            )
+        await message.answer(
+            full_post,
+            parse_mode="HTML",
+            disable_web_page_preview=True
+        )
 
     except Exception as e:
         await message.answer(f"❌ Ошибка при генерации поста: {str(e)}")
-
-    try:
-    job_title = vacancy_data.get("name", "job vacancy")
-    image_bytes = generate_image(job_title)
-    photo = io.BytesIO(image_bytes)
-    photo.name = "vacancy.jpg"
-    
-    await message.answer_photo(
-        photo=photo,
-        caption=full_post,
-        parse_mode="HTML"
-    )
-except Exception as e:
-    print(f"IMAGE ERROR: {e}")  # добавьте эту строку
-    await message.answer(
-        full_post,
-        parse_mode="HTML",
-        disable_web_page_preview=True
-    )
-
 
 
 @dp.message()
