@@ -21,11 +21,22 @@ async def get_vacancy_info(vacancy_id: str) -> Optional[Dict]:
     """Получает информацию о вакансии через API HH"""
     url = f'https://api.hh.ru/vacancies/{vacancy_id}'
     
+    headers = {
+        "User-Agent": "TG-Vacancy-Bot/1.0 (vacancy_bot@example.com)",
+        "Accept": "application/json",
+        "Accept-Language": "ru-RU,ru;q=0.9",
+        "HH-User-Agent": "TG-Vacancy-Bot/1.0 (vacancy_bot@example.com)"
+    }
+    
     async with httpx.AsyncClient(verify=False) as client:
         try:
-            response = await client.get(url, timeout=30.0)
+            response = await client.get(url, headers=headers, timeout=30.0)
+            print(f"HH API статус: {response.status_code}")
             response.raise_for_status()
             return response.json()
+        except httpx.HTTPStatusError as e:
+            print(f"HTTP ошибка от HH API: {e.response.status_code} — {e.response.text}")
+            return None
         except httpx.HTTPError as e:
             print(f"Ошибка при запросе к HH API: {e}")
             return None
