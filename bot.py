@@ -4,11 +4,10 @@ from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, C
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.enums import ParseMode
-from config import TELEGRAM_BOT_TOKEN, ADMIN_IDS
+from config import TELEGRAM_BOT_TOKEN, ADMIN_IDS, HH_CLIENT_ID, HH_CLIENT_SECRET
 from hh_api import extract_vacancy_id, get_vacancy_info, format_vacancy_data
 from ai_generator import generate_telegram_post
 from prompts import get_prompt, set_prompt, reset_prompt
-from hh_api import extract_vacancy_id, get_vacancy_info, format_vacancy_data
 
 
 
@@ -198,7 +197,7 @@ async def process_vacancy_link(message: Message):
     await message.answer("⏳ Обрабатываю вакансию...")
     
     # Получаем данные с HH API
-    vacancy_data = await get_vacancy_info(vacancy_id)
+    vacancy_data = await get_vacancy_info(vacancy_id, HH_CLIENT_ID, HH_CLIENT_SECRET)
     
     if not vacancy_data:
         await message.answer("❌ Не удалось получить данные о вакансии. Проверьте ссылку.")
