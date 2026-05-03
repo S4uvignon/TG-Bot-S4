@@ -9,6 +9,9 @@ GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 # ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 # OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
+HH_CLIENT_ID = os.getenv('HH_CLIENT_ID')
+HH_CLIENT_SECRET = os.getenv('HH_CLIENT_SECRET')
+
 HH_API_BASE_URL = 'https://api.hh.ru'
 GROQ_BASE_URL = 'https://api.groq.com/openai/v1'
 # DEEPSEEK_BASE_URL = 'https://api.deepseek.com'
